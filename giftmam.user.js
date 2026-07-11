@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GiftMAM
 // @namespace    https://github.com/Photaz/GiftMAM
-// @version      2.2.5
+// @version      2.2.6
 // @description  Scrapes, checks history, and gifts new users directly from the browser.
 // @author       Photaz
 // @license      MIT
@@ -480,7 +480,7 @@
                         const vResp = await fetch(`/json/bonusBuy.php/?spendtype=VIP&duration=max`);
                         const vData = await vResp.json();
                         if (vData.success) {
-                            window.log && window.log("� Auto-renewed VIP status!", "success");
+                            window.log && window.log("👑 Auto-renewed VIP status!", "success");
                             spendLog.add("Renewed VIP status (Max)");
                             if (vData.seedbonus) currentBP = parseInt(vData.seedbonus, 10);
                         }
@@ -494,7 +494,7 @@
                     const uResp = await fetch(`/json/bonusBuy.php/?spendtype=upload&amount=${amountGB}`);
                     const uData = await uResp.json();
                     if (uData.success) {
-                        window.log && window.log(`� Auto-bought ${amountGB}GB upload credit!`, 'success');
+                        window.log && window.log(`🛒 Auto-bought ${amountGB}GB upload credit!`, 'success');
                         spendLog.add(`Bought ${amountGB}GB upload credit`);
                         if (uData.seedbonus) currentBP = parseInt(uData.seedbonus, 10);
                     }
@@ -547,7 +547,7 @@
                         existingVaultBtn = document.createElement('a');
                         existingVaultBtn.id = 'mam-vault-donate-btn';
                         existingVaultBtn.className = 'mam-daily-btn';
-                        existingVaultBtn.innerHTML = '�';
+                        existingVaultBtn.innerHTML = '💎';
                         existingVaultBtn.href = '/millionaires/donate.php';
                         existingVaultBtn.target = '_blank';
 
@@ -582,7 +582,7 @@
                         existingLottoBtn = document.createElement('a');
                         existingLottoBtn.id = 'mam-lotto-enter-btn';
                         existingLottoBtn.className = 'mam-daily-btn';
-                        existingLottoBtn.innerHTML = '�';
+                        existingLottoBtn.innerHTML = '🎫';
                         existingLottoBtn.href = '/play_lotto.php';
                         existingLottoBtn.target = '_blank';
 
@@ -686,7 +686,7 @@
                 const macroNeeded = gapDetected || (Date.now() - lastMacro > 43200000); // 12 hour safety net
 
                 if (macroNeeded) {
-                    if (gapDetected) window.log && window.log("�️ Gap detected in widget. Triggering deep sync...", "warn");
+                    if (gapDetected) window.log && window.log("🕳️ Gap detected in widget. Triggering deep sync...", "warn");
                     return await syncEngine.macroSync(false);
                 }
 
@@ -712,13 +712,13 @@
 
         macroSync: async (isManual = false) => {
             if (syncEngine.syncPromise) {
-                if (isManual) window.log && window.log("� Sync already in progress...", "info");
+                if (isManual) window.log && window.log("🔄 Sync already in progress...", "info");
                 return syncEngine.syncPromise;
             }
 
             syncEngine.syncPromise = (async () => {
                 if (isManual) {
-                    window.log && window.log("� Deep Syncing...", "info");
+                    window.log && window.log("🔄 Deep Syncing...", "info");
                     lastHeartbeatTime = Date.now();
                 }
 
@@ -753,14 +753,14 @@
 
                     if (addedCount > 0) {
                         const mouseWord = addedCount === 1 ? 'mouse' : 'mice';
-                        window.log && window.log(`� Recovered ${addedCount} overflow ${mouseWord}!`, "success");
+                        window.log && window.log(`🔄 Recovered ${addedCount} overflow ${mouseWord}!`, "success");
                     } else if (isManual) {
-                        window.log && window.log(`� No new mice...`, "info");
+                        window.log && window.log(`🔄 No new mice...`, "info");
                     }
 
                     return virtualQueue.length;
                 } catch (e) {
-                    if (isManual) window.log && window.log("� Sync failed.", "error");
+                    if (isManual) window.log && window.log("🔄 Sync failed.", "error");
                     return 0;
                 } finally {
                     syncEngine.syncPromise = null;
@@ -821,7 +821,7 @@
         const radius = 32;
         const circumference = 2 * Math.PI * radius;
 
-       const settingsHTML = `<div class="mam-settings-view" style="display: none; padding: 10px; background: var(--secondary-background, #1a1a1a); border: 1px solid var(--container-border, #444); border-radius: 4px; font-size: 11px; height: 128px; width: 100%; box-sizing: border-box; overflow-y: auto; text-align: left; margin: 0;"><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 0 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>� BP Management</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Default Gift (5-1000 or max):</label><input type="text" id="cfg-gift-amt" value="100" placeholder="max" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Stop Gifting When BP Below:</label><input type="number" id="cfg-bp-floor" value="5000" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"></div><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 6px 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>� Auto-Spend Options</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Auto-Buy Amount:</label><select id="cfg-auto-upload-tier" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off" selected>Off</option><option value="10000">20G/10k</option><option value="25000">50G/25k</option><option value="50000">100G/50k</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Buy When BP Above:</label><input type="number" id="cfg-auto-upload-trigger" value="85000" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Auto-Renew VIP:</label><select id="cfg-auto-vip" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off" selected>Off</option><option value="on">Weekly</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Vault Reminder:</label><select id="cfg-vault-mode" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off">Off</option><option value="on">On</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Lotto Reminder:</label><select id="cfg-lotto-mode" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off" selected>Off</option><option value="on">On</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><button id="btn-spend-log" style="background: #333; color: #eee; border: 1px solid #555; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">View 7-Day Spend Log</button></div><div id="spend-log-container" style="display: none; background: var(--secondary-background, #111); border: 1px inset var(--container-border, #444); padding: 6px; margin-bottom: 4px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 10px; color: #bbb; line-height: 1.4;"></div><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 6px 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>� Automation</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Gift Cooldown:</label><select id="cfg-cooldown-days" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="0" selected>Once</option><option value="1">1 Day</option><option value="2">2 Days</option><option value="3">3 Days</option><option value="7">7 Days</option></select></div><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 6px 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>� Data & UI</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Widget Position:</label><div class="mam-pos-grid" id="cfg-widget-pos"><button class="mam-pos-btn" data-pos="tl" title="Top-Left"></button><button class="mam-pos-btn" data-pos="tr" title="Top-Right"></button><button class="mam-pos-btn" data-pos="bl" title="Bottom-Left"></button><button class="mam-pos-btn" data-pos="br" title="Bottom-Right"></button></div></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Theme:</label><select id="cfg-theme" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Hide News:</label><div style="display: flex; justify-content: flex-end; align-items: center; width: 85px; gap: 4px;"><button id="btn-reset-news" style="background: none; border: none; padding: 0; cursor: pointer; font-size: 13px; opacity: 0.5; transition: opacity 0.2s;" title="Unhide all news" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">↩️</button><select id="cfg-news-tweak" style="width: 65px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off">Off</option><option value="click">Click</option><option value="on">On</option></select></div></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Compact Layout:</label><select id="cfg-shrink-blocks" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off">Off</option><option value="on">On</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 8px; border-top: 1px solid rgba(128,128,128,0.2); gap: 4px;"><button id="btn-export-db" style="background: #333; color: #eee; border: 1px solid #555; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">Export</button><button id="btn-import-db" style="background: #333; color: #eee; border: 1px solid #555; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">Import</button><button id="btn-wipe-db" style="background: #8b0000; color: #fff; border: 1px solid #600; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">Wipe</button></div></div>`;
+       const settingsHTML = `<div class="mam-settings-view" style="display: none; padding: 10px; background: var(--secondary-background, #1a1a1a); border: 1px solid var(--container-border, #444); border-radius: 4px; font-size: 11px; height: 128px; width: 100%; box-sizing: border-box; overflow-y: auto; text-align: left; margin: 0;"><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 0 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>🧀 BP Management</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Default Gift (5-1000 or max):</label><input type="text" id="cfg-gift-amt" value="100" placeholder="max" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Stop Gifting When BP Below:</label><input type="number" id="cfg-bp-floor" value="5000" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"></div><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 6px 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>💳 Auto-Spend Options</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Auto-Buy Amount:</label><select id="cfg-auto-upload-tier" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off" selected>Off</option><option value="10000">20G/10k</option><option value="25000">50G/25k</option><option value="50000">100G/50k</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Buy When BP Above:</label><input type="number" id="cfg-auto-upload-trigger" value="85000" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Auto-Renew VIP:</label><select id="cfg-auto-vip" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off" selected>Off</option><option value="on">Weekly</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Vault Reminder:</label><select id="cfg-vault-mode" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off">Off</option><option value="on">On</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Lotto Reminder:</label><select id="cfg-lotto-mode" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off" selected>Off</option><option value="on">On</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><button id="btn-spend-log" style="background: #333; color: #eee; border: 1px solid #555; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">View 7-Day Spend Log</button></div><div id="spend-log-container" style="display: none; background: var(--secondary-background, #111); border: 1px inset var(--container-border, #444); padding: 6px; margin-bottom: 4px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 10px; color: #bbb; line-height: 1.4;"></div><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 6px 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>🤖 Automation</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Gift Cooldown:</label><select id="cfg-cooldown-days" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="0" selected>Once</option><option value="1">1 Day</option><option value="2">2 Days</option><option value="3">3 Days</option><option value="7">7 Days</option></select></div><div class="mam-setting-group" style="color: var(--text-important, #ddd); margin: 6px 0 4px; border-bottom: 1px solid var(--container-border, #444); padding-bottom: 2px;"><strong>💾 Data & UI</strong></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Widget Position:</label><div class="mam-pos-grid" id="cfg-widget-pos"><button class="mam-pos-btn" data-pos="tl" title="Top-Left"></button><button class="mam-pos-btn" data-pos="tr" title="Top-Right"></button><button class="mam-pos-btn" data-pos="bl" title="Bottom-Left"></button><button class="mam-pos-btn" data-pos="br" title="Bottom-Right"></button></div></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Theme:</label><select id="cfg-theme" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Hide News:</label><div style="display: flex; justify-content: flex-end; align-items: center; width: 85px; gap: 4px;"><button id="btn-reset-news" style="background: none; border: none; padding: 0; cursor: pointer; font-size: 13px; opacity: 0.5; transition: opacity 0.2s;" title="Unhide all news" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">↩️</button><select id="cfg-news-tweak" style="width: 65px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off">Off</option><option value="click">Click</option><option value="on">On</option></select></div></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px;"><label style="flex: 1; text-align: left; color: var(--main-text-color, #ccc); white-space: nowrap;">Compact Layout:</label><select id="cfg-shrink-blocks" style="width: 85px; flex-shrink: 0; background: var(--main-background, #333); color: var(--main-text-color, #eee); border: 1px solid var(--container-border, #555); padding: 2px; border-radius: 3px; font-size: 11px; text-align: right; box-sizing: border-box;"><option value="off">Off</option><option value="on">On</option></select></div><div class="mam-setting-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 8px; border-top: 1px solid rgba(128,128,128,0.2); gap: 4px;"><button id="btn-export-db" style="background: #333; color: #eee; border: 1px solid #555; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">Export</button><button id="btn-import-db" style="background: #333; color: #eee; border: 1px solid #555; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">Import</button><button id="btn-wipe-db" style="background: #8b0000; color: #fff; border: 1px solid #600; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1; text-align: center;">Wipe</button></div></div>`;
 
         if (isInline) {
             const targetContainer = document.querySelector('#fpNM .blockBodyCon');
@@ -830,7 +830,7 @@
                 isInline = false;
             } else {
                 div.className = 'inline-gift-ui';
-                div.innerHTML = `<div class="toolbar"><div class="mam-heartbeat-wrap"><div class="mam-heartbeat-bar"></div></div><div style="flex: 1; display: flex; justify-content: flex-start;"><select id="gift-limit" title="Batch Limit"><option value="VISIBLE">Newest</option><option value="BOT">� Auto</option></select></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Mice Gifted"><span class="stat-emoji">�</span> <span id="ui-db-count" style="color:#66BB6A;">${db.count()}</span></span></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Bonus Points" style="color:#CCAC5B;"><span class="stat-emoji">�</span> <span id="ui-bp">...</span></span></div><div style="flex: 1; display: flex; justify-content: flex-end; gap: 6px;"><button id="btn-run" class="btn-start" title="Start Gifting">�</button></div></div><div class="mam-main-view" style="display: none;"></div>${settingsHTML}`;
+                div.innerHTML = `<div class="toolbar"><div class="mam-heartbeat-wrap"><div class="mam-heartbeat-bar"></div></div><div style="flex: 1; display: flex; justify-content: flex-start;"><select id="gift-limit" title="Batch Limit"><option value="VISIBLE">Newest</option><option value="BOT">🤖 Auto</option></select></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Mice Gifted"><span class="stat-emoji">🐭</span> <span id="ui-db-count" style="color:#66BB6A;">${db.count()}</span></span></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Bonus Points" style="color:#CCAC5B;"><span class="stat-emoji">🧀</span> <span id="ui-bp">...</span></span></div><div style="flex: 1; display: flex; justify-content: flex-end; gap: 6px;"><button id="btn-run" class="btn-start" title="Start Gifting">🎁</button></div></div><div class="mam-main-view" style="display: none;"></div>${settingsHTML}`;
                 targetContainer.appendChild(div);
 
                 const footer = document.querySelector('#fpNM .blockFoot');
@@ -871,7 +871,7 @@
 
         if (!isInline) {
             div.id = 'mam-gift-panel';
-            div.innerHTML = `<svg class="progress-ring" width="70" height="70"><circle class="progress-ring__bg" stroke="black" stroke-width="4" fill="transparent" r="${radius}" cx="35" cy="35"/><circle class="progress-ring__circle" stroke="#4CAF50" stroke-width="4" fill="transparent" r="${radius}" cx="35" cy="35" style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${circumference}"/></svg><div class="minimized-icon">�<div class="error-badge">⚠️</div></div><div class="panel-content"><div class="dialog-header"><div style="display:flex; align-items: center;"><h3 class="mam-panel-title"><span class="title-emoji">�</span> GiftMAM</h3><div id="mam-panel-actions" style="display:flex; gap: 8px; align-items: center; margin-left: 10px; transform: translateY(1px);"></div></div><div style="display:flex; gap: 8px; align-items: center; margin-left: auto;"><button id="btn-settings" style="background:none; border:none; color:var(--main-text-color, #aaa); font-size:16px; cursor:pointer; padding:0; line-height:1;" title="Settings">⚙️</button><button id="btn-min" style="background:none; border:none; color:var(--main-text-color, #aaa); font-size:16px; cursor:pointer; padding:0; line-height:1;">—</button></div></div><div class="mam-main-view"><div style="position: relative; margin: 0;"><button class="btn-refresh log-refresh-btn" id="btn-refresh" title="Soft Refresh"><img class="invertBlue" src="/pic/refresh.svg" alt="refresh" style="width: 16px; height: 16px;"></button><div id="mam-log"></div></div></div>${settingsHTML}<div class="toolbar"><div class="mam-heartbeat-wrap"><div class="mam-heartbeat-bar"></div></div><div style="flex: 1; display: flex; justify-content: flex-start;"><select id="gift-limit" title="Batch Limit"><option value="5">5</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="ALL">ALL</option><option value="BOT">� Auto</option></select></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Mice Gifted/Queue"><span class="stat-emoji">�</span> <span id="ui-db-count" style="color:#66BB6A;">${db.count()}</span></span></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Bonus Points" style="color:#CCAC5B;"><span class="stat-emoji">�</span> <span id="ui-bp">...</span></span></div><div style="flex: 1; display: flex; justify-content: flex-end; gap: 6px;"><button id="btn-run" class="btn-start" title="Start Gifting">�</button></div></div></div>`;
+            div.innerHTML = `<svg class="progress-ring" width="70" height="70"><circle class="progress-ring__bg" stroke="black" stroke-width="4" fill="transparent" r="${radius}" cx="35" cy="35"/><circle class="progress-ring__circle" stroke="#4CAF50" stroke-width="4" fill="transparent" r="${radius}" cx="35" cy="35" style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${circumference}"/></svg><div class="minimized-icon">🎁<div class="error-badge">⚠️</div></div><div class="panel-content"><div class="dialog-header"><div style="display:flex; align-items: center;"><h3 class="mam-panel-title"><span class="title-emoji">🎁</span> GiftMAM</h3><div id="mam-panel-actions" style="display:flex; gap: 8px; align-items: center; margin-left: 10px; transform: translateY(1px);"></div></div><div style="display:flex; gap: 8px; align-items: center; margin-left: auto;"><button id="btn-settings" style="background:none; border:none; color:var(--main-text-color, #aaa); font-size:16px; cursor:pointer; padding:0; line-height:1;" title="Settings">⚙️</button><button id="btn-min" style="background:none; border:none; color:var(--main-text-color, #aaa); font-size:16px; cursor:pointer; padding:0; line-height:1;">—</button></div></div><div class="mam-main-view"><div style="position: relative; margin: 0;"><button class="btn-refresh log-refresh-btn" id="btn-refresh" title="Soft Refresh"><img class="invertBlue" src="/pic/refresh.svg" alt="refresh" style="width: 16px; height: 16px;"></button><div id="mam-log"></div></div></div>${settingsHTML}<div class="toolbar"><div class="mam-heartbeat-wrap"><div class="mam-heartbeat-bar"></div></div><div style="flex: 1; display: flex; justify-content: flex-start;"><select id="gift-limit" title="Batch Limit"><option value="5">5</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="ALL">ALL</option><option value="BOT">🤖 Auto</option></select></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Mice Gifted/Queue"><span class="stat-emoji">🐭</span> <span id="ui-db-count" style="color:#66BB6A;">${db.count()}</span></span></div><div class="stat-text" style="flex: 0 1 auto;"><span title="Bonus Points" style="color:#CCAC5B;"><span class="stat-emoji">🧀</span> <span id="ui-bp">...</span></span></div><div style="flex: 1; display: flex; justify-content: flex-end; gap: 6px;"><button id="btn-run" class="btn-start" title="Start Gifting">🎁</button></div></div></div>`;
             document.body.appendChild(div);
         }
 
@@ -1053,7 +1053,7 @@
                                 archiveCountCache = parsed.archived;
                             }
                             window.updateUICounts();
-                            window.log && window.log("� Database imported successfully.", "success");
+                            window.log && window.log("📥 Database imported successfully.", "success");
                         } else {
                             throw new Error("Invalid format");
                         }
@@ -1076,7 +1076,7 @@
                     dbCache = {}; db.save();
                     GM_setValue(ARCHIVE_KEY, "0"); archiveCountCache = 0;
                     window.updateUICounts();
-                    window.log && window.log("�️ Database wiped clean.", "warn");
+                    window.log && window.log("🗑️ Database wiped clean.", "warn");
                     btnWipe.textContent = 'Wiped!';
                     setTimeout(() => { btnWipe.textContent = 'Wipe'; btnWipe.style.background = '#8b0000'; }, 2000);
                 }
@@ -1101,7 +1101,7 @@
             if (remoteIsActive) {
                 if (selectLimit) selectLimit.disabled = true;
                 if (btnRun) {
-                    btnRun.textContent = "�";
+                    btnRun.textContent = "🔒";
 
                     let titleStr = "Locked by another tab";
                     if (remoteData && remoteData.isRunning) titleStr = "Another tab is gifting...";
@@ -1116,7 +1116,7 @@
             } else {
                 if (selectLimit) selectLimit.disabled = isAutoActive;
                 if (btnRun) {
-                    btnRun.textContent = isAutoActive ? "�" : "�";
+                    btnRun.textContent = isAutoActive ? "🛑" : "🎁";
                     btnRun.title = isAutoActive ? "Click to Stop" : "Start Gifting";
                     btnRun.style.opacity = "1";
                     btnRun.style.cursor = "pointer";
@@ -1127,19 +1127,19 @@
             }
         };
 
-        let currentBaseIcon = '�';
+        let currentBaseIcon = '🎁';
         let miniIconIndex = 0;
 
         const updateMinimizedState = (state) => {
             div.classList.remove('mam-gifting', 'mam-sleeping');
             if (state === 'gifting') {
                 div.classList.add('mam-gifting');
-                currentBaseIcon = '�';
+                currentBaseIcon = '🎁';
             } else if (state === 'sleeping') {
                 div.classList.add('mam-sleeping');
-                currentBaseIcon = '�';
+                currentBaseIcon = '💤';
             } else {
-                currentBaseIcon = '�';
+                currentBaseIcon = '🎁';
                 setProgress(0);
             }
 
@@ -1159,8 +1159,8 @@
             const lottoBtn = document.getElementById('mam-lotto-enter-btn');
             const vaultBtn = document.getElementById('mam-vault-donate-btn');
 
-            if (lottoBtn && lottoBtn.dataset.active === 'true') icons.push('�');
-            if (vaultBtn && vaultBtn.dataset.active === 'true') icons.push('�');
+            if (lottoBtn && lottoBtn.dataset.active === 'true') icons.push('🎫');
+            if (vaultBtn && vaultBtn.dataset.active === 'true') icons.push('💎');
 
             if (icons.length <= 1) {
                 if (minIcon.childNodes[0].textContent !== currentBaseIcon && minIcon.style.opacity !== '0') {
@@ -1320,7 +1320,7 @@
                         currentBackoffIndex = Math.min(currentBackoffIndex + 1, backoffLevels.length - 1);
                         nextPulseTarget = lastHeartbeatTime + getJitteredTime(backoffLevels[currentBackoffIndex]);
                         if (currentBackoffIndex > 0) {
-                            window.log && window.log(`� Site quiet. Backing off checks to ~${backoffLevels[currentBackoffIndex]}m`, "info");
+                            window.log && window.log(`💤 Site quiet. Backing off checks to ~${backoffLevels[currentBackoffIndex]}m`, "info");
                         }
                     }
                 }
@@ -1341,7 +1341,7 @@
                     isAutoActive = false;
                     isSoftPaused = false;
                     updateMinimizedState('stopped');
-                    window.log && window.log("� Auto Mode stopped.", "warn");
+                    window.log && window.log("🛑 Auto Mode stopped.", "warn");
                 }
                 broadcastState();
                 return;
@@ -1355,11 +1355,11 @@
                 if (selectLimit) selectLimit.disabled = false;
                 updateMinimizedState('stopped');
                 if (btnRun) {
-                    btnRun.textContent = "�";
+                    btnRun.textContent = "🎁";
                     btnRun.title = "Start Gifting";
                     btnRun.classList.remove('stopping');
                 }
-                window.log && window.log("� Auto Mode stopped.", "warn");
+                window.log && window.log("🛑 Auto Mode stopped.", "warn");
                 broadcastState();
                 return;
             }
@@ -1369,7 +1369,7 @@
             if (limitVal === 'BOT') {
                 if (!isAutoActive) {
                     isAutoActive = true;
-                    window.log && window.log("� Auto Mode Engaged.", "info");
+                    window.log && window.log("🤖 Auto Mode Engaged.", "info");
                 }
             } else {
                 isAutoActive = false;
@@ -1385,7 +1385,7 @@
 
             if (btnRun) {
                 btnRun.classList.add('stopping');
-                btnRun.textContent = "�";
+                btnRun.textContent = "🛑";
                 btnRun.title = "Click to Stop";
             }
 
@@ -1403,7 +1403,7 @@
                 if (stopRequested) break;
 
                 if (currentBP < bpFloor) {
-                    window.log && window.log(`� BP hit safety floor (${bpFloor}). Stopping.`, 'warn');
+                    window.log && window.log(`🛑 BP hit safety floor (${bpFloor}). Stopping.`, 'warn');
                     stopRequested = true;
                     break;
                 }
@@ -1530,24 +1530,24 @@
                 } else {
                     updateMinimizedState('sleeping');
                     if (btnRun) {
-                        btnRun.textContent = "�";
+                        btnRun.textContent = "🛑";
                         btnRun.title = "Auto Active (Click to Stop)";
                         btnRun.classList.add('stopping');
                     }
-                    if (!wasAborted) window.log && window.log(`� Batch done. Monitoring...`, 'info');
+                    if (!wasAborted) window.log && window.log(`💤 Batch done. Monitoring...`, 'info');
                 }
             } else {
                 updateMinimizedState('stopped');
                 if (btnRun) {
-                    btnRun.textContent = "�";
+                    btnRun.textContent = "🎁";
                     btnRun.title = "Start Gifting";
                 }
                 if (selectLimit) selectLimit.disabled = false;
 
                 if (wasAborted && !isSoftPaused) {
-                    window.log && window.log(`� Batch aborted.`, 'warn');
+                    window.log && window.log(`🛑 Batch aborted.`, 'warn');
                 } else if (!wasAborted) {
-                    window.log && window.log(`� Batch Complete.`, 'success');
+                    window.log && window.log(`🎉 Batch Complete.`, 'success');
                 }
             }
         }
@@ -1643,7 +1643,7 @@
 
             reconnectBtn.onclick = (e) => {
                 e.preventDefault();
-                sbLog("� Reconnecting...", "info");
+                sbLog("🔄 Reconnecting...", "info");
 
                 try {
                     const liveSbf = document.querySelector('#sbf .blockBodyCon');
@@ -1656,7 +1656,7 @@
                                     if (chatContainer) {
                                         setTimeout(() => {
                                             chatContainer.scrollTop = chatContainer.scrollHeight;
-                                            sbLog("� Shoutbox reconnected.", "success");
+                                            sbLog("💬 Shoutbox reconnected.", "success");
                                         }, 100);
                                     }
                                     obs.disconnect();
@@ -1747,7 +1747,7 @@
 
                                     // --- GIFT POINTS ---
                                     const giftPointsBtn = document.createElement('span');
-                                    giftPointsBtn.innerHTML = '�';
+                                    giftPointsBtn.innerHTML = '🎁';
                                     giftPointsBtn.style.cssText = 'cursor: pointer; font-size: 14px; line-height: 1;';
                                     giftPointsBtn.title = "Gift Points";
                                     giftPointsBtn.onclick = async (e) => {
@@ -1765,7 +1765,7 @@
                                                     const resp = await fetch(`/json/bonusBuy.php?spendtype=gift&amount=${numAmount}&giftTo=${uid}`);
                                                     const data = await resp.json();
                                                     if (data.success) {
-                                                        sbLog(`� ${numAmount} BP to ${username}`, 'success');
+                                                        sbLog(`🎁 ${numAmount} BP to ${username}`, 'success');
                                                         if (data.seedbonus !== undefined) {
                                                             currentBP = parseInt(data.seedbonus, 10);
                                                             if (typeof window.updateUIBP === 'function') window.updateUIBP();
@@ -1790,7 +1790,7 @@
 
                                     // --- GIFT WEDGE ---
                                     const giftWedgeBtn = document.createElement('span');
-                                    giftWedgeBtn.innerHTML = '�';
+                                    giftWedgeBtn.innerHTML = '🧀';
                                     giftWedgeBtn.style.cssText = 'cursor: pointer; font-size: 14px; line-height: 1;';
                                     giftWedgeBtn.title = "Gift Freeleech Wedge";
                                     giftWedgeBtn.onclick = async (e) => {
@@ -1801,7 +1801,7 @@
                                                 const resp = await fetch(`/json/bonusBuy.php?spendtype=sendWedge&giftTo=${uid}`);
                                                 const data = await resp.json();
                                                 if (data.success) {
-                                                    sbLog(`� Wedge to ${username}`, 'success');
+                                                    sbLog(`🧀 Wedge to ${username}`, 'success');
                                                     if (data.seedbonus !== undefined) {
                                                         currentBP = parseInt(data.seedbonus, 10);
                                                         if (typeof window.updateUIBP === 'function') window.updateUIBP();
