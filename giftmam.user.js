@@ -6,8 +6,8 @@
 // @author       Photaz
 // @license      MIT
 // @match        https://www.myanonamouse.net/*
-// @updateURL    https://raw.githubusercontent.com/wokka1/scripts/main/giftmam.user.js
-// @downloadURL  https://raw.githubusercontent.com/wokka1/scripts/main/giftmam.user.js
+// @updateURL    https://raw.githubusercontent.com/wokka1/giftmam/main/giftmam.user.js
+// @downloadURL  https://raw.githubusercontent.com/wokka1/giftmam/main/giftmam.user.js
 // @grant        GM_setValue
 // @grant        GM_getValue
 // ==/UserScript==
