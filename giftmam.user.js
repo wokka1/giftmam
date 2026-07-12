@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GiftMAM
 // @namespace    https://github.com/Photaz/GiftMAM
-// @version      2.2.6
+// @version      2.2.7
 // @description  Scrapes, checks history, and gifts new users directly from the browser.
 // @author       Photaz
 // @license      MIT
@@ -654,7 +654,7 @@
             if (!syncEngine.attemptElection()) return 0;
 
             try {
-                const resp = await fetch('/json/newestMembers.php');
+                const resp = await fetch('/json/newestMembers.php', { cache: 'no-store' });
                 if (!resp.ok) return 0;
                 const html = await resp.text();
                 const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -725,8 +725,8 @@
                 try {
                     // Fetch full list to catch overflow, and widget to keep UI up to date
                     const [response, widgetResp] = await Promise.all([
-                        fetch('/newUsers.php'),
-                        fetch('/json/newestMembers.php')
+                        fetch('/newUsers.php', { cache: 'no-store' }),
+                        fetch('/json/newestMembers.php', { cache: 'no-store' })
                     ]);
                     const text = await response.text();
                     const htmlUpdate = widgetResp.ok ? await widgetResp.text() : null;
