@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GiftMAM
 // @namespace    https://github.com/Photaz/GiftMAM
-// @version      2.2.8
+// @version      2.2.9
 // @description  Scrapes, checks history, and gifts new users directly from the browser.
 // @author       Photaz
 // @license      MIT
@@ -21,6 +21,7 @@
     const DB_KEY = 'mam_gift_history_v1';
     const ARCHIVE_KEY = 'mam_gift_archive_count';
     const PRUNE_DAYS = 30;
+    const DAILY_GIFT_CAP = 100;
 
     const cfg = {
         get: (k, def) => { const v = GM_getValue('mam_cfg_'+k); return v === undefined ? def : v; },
@@ -382,6 +383,35 @@
                 const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
                 return logs.filter(x => x.t > cutoff);
             } catch(e){ return []; }
+        }
+    };
+
+    // Site enforces a DAILY_GIFT_CAP sends/day; tracked client-side (not by parsing
+    // API error text) since the exact number is known and resets are on UTC midnight,
+    // matching the vault/lotto daily reset convention already used below.
+    const dailyGifts = {
+        _reset: () => {
+            GM_setValue('mam_daily_gift_count', '0');
+            GM_setValue('mam_daily_gift_reset', (getRecentMidnightUTC() + 86400000).toString());
+        },
+        _ensureFresh: () => {
+            const resetAt = parseInt(GM_getValue('mam_daily_gift_reset', '0'), 10);
+            if (Date.now() >= resetAt) dailyGifts._reset();
+        },
+        count: () => {
+            dailyGifts._ensureFresh();
+            return parseInt(GM_getValue('mam_daily_gift_count', '0'), 10) || 0;
+        },
+        increment: () => {
+            dailyGifts._ensureFresh();
+            const next = dailyGifts.count() + 1;
+            GM_setValue('mam_daily_gift_count', next.toString());
+            return next;
+        },
+        isMaxed: () => dailyGifts.count() >= DAILY_GIFT_CAP,
+        resetTime: () => {
+            dailyGifts._ensureFresh();
+            return parseInt(GM_getValue('mam_daily_gift_reset', '0'), 10);
         }
     };
 
@@ -1379,6 +1409,12 @@
                 return;
             }
 
+            if (dailyGifts.isMaxed()) {
+                if (isSystemTrigger) return; // stay quiet; no log spam on automated retries
+                window.log && window.log(`🌙 Daily gift cap (${DAILY_GIFT_CAP}) reached. Quiet mode until ${new Date(dailyGifts.resetTime()).toLocaleString()}.`, 'warn');
+                return;
+            }
+
             const limitVal = selectLimit ? selectLimit.value : 'ALL';
 
             if (limitVal === 'BOT') {
@@ -1417,6 +1453,12 @@
             while (virtualQueue.length > 0 && processed < maxGifts) {
                 if (stopRequested) break;
 
+                if (dailyGifts.isMaxed()) {
+                    window.log && window.log(`🌙 Daily gift cap (${DAILY_GIFT_CAP}) reached. Quiet mode until ${new Date(dailyGifts.resetTime()).toLocaleString()}.`, 'warn');
+                    stopRequested = true;
+                    break;
+                }
+
                 if (currentBP < bpFloor) {
                     window.log && window.log(`🛑 BP hit safety floor (${bpFloor}). Stopping.`, 'warn');
                     stopRequested = true;
@@ -1453,6 +1495,8 @@
                 if (result.success || (result.error && result.error.includes("daily cap"))) {
                     db.add(username);
                     processed++;
+
+                    if (result.success) dailyGifts.increment();
 
                     const deducted = result.amount || 100;
                     currentBP -= deducted;
