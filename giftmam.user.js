@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GiftMAM
 // @namespace    https://github.com/Photaz/GiftMAM
-// @version      2.2.9
+// @version      2.3.0
 // @description  Scrapes, checks history, and gifts new users directly from the browser.
 // @author       Photaz
 // @license      MIT
@@ -1357,16 +1357,20 @@
                     if (newCount > 0) {
                         currentBackoffIndex = 0;
                         nextPulseTarget = lastHeartbeatTime + getJitteredTime(backoffLevels[currentBackoffIndex]);
-
-                        if (isAutoActive && !isRunning) {
-                            runBatch(true);
-                        }
                     } else {
                         currentBackoffIndex = Math.min(currentBackoffIndex + 1, backoffLevels.length - 1);
                         nextPulseTarget = lastHeartbeatTime + getJitteredTime(backoffLevels[currentBackoffIndex]);
                         if (currentBackoffIndex > 0) {
                             window.log && window.log(`💤 Site quiet. Backing off checks to ~${backoffLevels[currentBackoffIndex]}m`, "info");
                         }
+                    }
+
+                    // Retry whenever Auto Mode is armed, idle, and holding a queue - not just
+                    // when this poll found new users. This is what lets a run that stopped
+                    // early for the daily gift cap resume on its own once the cap resets at
+                    // midnight, instead of waiting for a fresh new-user hit to wake it up.
+                    if (isAutoActive && !isRunning && virtualQueue.length > 0 && !dailyGifts.isMaxed()) {
+                        runBatch(true);
                     }
                 }
             }, 1000);
@@ -1406,12 +1410,6 @@
                 }
                 window.log && window.log("🛑 Auto Mode stopped.", "warn");
                 broadcastState();
-                return;
-            }
-
-            if (dailyGifts.isMaxed()) {
-                if (isSystemTrigger) return; // stay quiet; no log spam on automated retries
-                window.log && window.log(`🌙 Daily gift cap (${DAILY_GIFT_CAP}) reached. Quiet mode until ${new Date(dailyGifts.resetTime()).toLocaleString()}.`, 'warn');
                 return;
             }
 
