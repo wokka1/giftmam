@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GiftMAM
 // @namespace    https://github.com/Photaz/GiftMAM
-// @version      2.3.0
+// @version      2.3.1
 // @description  Scrapes, checks history, and gifts new users directly from the browser.
 // @author       Photaz
 // @license      MIT
@@ -480,6 +480,19 @@
         return d.getTime();
     }
 
+    // Plain fetch() has no default timeout - a connection that hangs (laptop sleep/wake,
+    // wifi/VPN blip) over a multi-day session can await forever and wedge whatever awaited
+    // it. This forces every request to settle (resolve or reject) within timeoutMs.
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
     const workers = {
         isProcessingStats: false,
         isProcessingDailies: false,
@@ -489,7 +502,7 @@
             workers.isProcessingStats = true;
 
             try {
-                const resp = await fetch('/jsonLoad.php');
+                const resp = await fetchWithTimeout('/jsonLoad.php');
                 if (!resp.ok) throw new Error("Network response failed");
                 const data = await resp.json();
 
@@ -507,7 +520,7 @@
                     const vipEnd = new Date(data.vip_until).getTime();
                     const sevenDays = 7 * 24 * 60 * 60 * 1000;
                     if (vipEnd - Date.now() < sevenDays && hasSafePoints) {
-                        const vResp = await fetch(`/json/bonusBuy.php/?spendtype=VIP&duration=max`);
+                        const vResp = await fetchWithTimeout(`/json/bonusBuy.php/?spendtype=VIP&duration=max`);
                         const vData = await vResp.json();
                         if (vData.success) {
                             window.log && window.log("👑 Auto-renewed VIP status!", "success");
@@ -521,7 +534,7 @@
                 const tier = cfg.get('uploadTier', 'off');
                 if (tier !== 'off' && currentBP >= cfg.get('uploadTrigger', 85000)) {
                     const amountGB = parseInt(tier, 10) / 500;
-                    const uResp = await fetch(`/json/bonusBuy.php/?spendtype=upload&amount=${amountGB}`);
+                    const uResp = await fetchWithTimeout(`/json/bonusBuy.php/?spendtype=upload&amount=${amountGB}`);
                     const uData = await uResp.json();
                     if (uData.success) {
                         window.log && window.log(`🛒 Auto-bought ${amountGB}GB upload credit!`, 'success');
@@ -684,7 +697,7 @@
             if (!syncEngine.attemptElection()) return 0;
 
             try {
-                const resp = await fetch('/json/newestMembers.php', { cache: 'no-store' });
+                const resp = await fetchWithTimeout('/json/newestMembers.php', { cache: 'no-store' });
                 if (!resp.ok) return 0;
                 const html = await resp.text();
                 const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -755,8 +768,8 @@
                 try {
                     // Fetch full list to catch overflow, and widget to keep UI up to date
                     const [response, widgetResp] = await Promise.all([
-                        fetch('/newUsers.php', { cache: 'no-store' }),
-                        fetch('/json/newestMembers.php', { cache: 'no-store' })
+                        fetchWithTimeout('/newUsers.php', { cache: 'no-store' }),
+                        fetchWithTimeout('/json/newestMembers.php', { cache: 'no-store' })
                     ]);
                     const text = await response.text();
                     const htmlUpdate = widgetResp.ok ? await widgetResp.text() : null;
@@ -811,7 +824,7 @@
         if (amtSetting === 'max' || (parsedAmt && parsedAmt > 100)) {
             if (uid) {
                 try {
-                    const classResp = await fetch(`/jsonLoad.php?id=${uid}`);
+                    const classResp = await fetchWithTimeout(`/jsonLoad.php?id=${uid}`);
                     if (classResp.ok) {
                         const classData = await classResp.json();
                         const cName = classData.classname || '';
@@ -833,7 +846,7 @@
             // Send via UID directly to bypass username encoding risks
             const target = uid ? uid : encodeURIComponent(username);
             const url = `https://www.myanonamouse.net/json/bonusBuy.php?spendtype=gift&amount=${finalAmt}&giftTo=${target}`;
-            const resp = await fetch(url);
+            const resp = await fetchWithTimeout(url);
             if (!resp.ok) return { success: false, error: `HTTP ${resp.status}`, amount: finalAmt };
             const data = await resp.json();
             return data.success ? { success: true, amount: finalAmt } : { success: false, error: data.error || "Unknown API error", amount: finalAmt };
@@ -1447,6 +1460,9 @@
             setProgress(0);
             const bpFloor = cfg.get('bpFloor', 5000);
 
+            // Wrapped so any unexpected exception mid-run still reaches the cleanup below -
+            // otherwise isRunning could get stuck true forever, deadlocking both heartbeats.
+            try {
             // Using a dynamic while-loop allows parallel soft-refreshes to seamlessly feed new users into the active run
             while (virtualQueue.length > 0 && processed < maxGifts) {
                 if (stopRequested) break;
@@ -1571,9 +1587,16 @@
                     }
                 }
             }
+            } catch (e) {
+                console.error("[GiftMAM] runBatch loop failed unexpectedly", e);
+                window.log && window.log(`⚠️ Unexpected error: ${e.message}. Stopping safely.`, 'error');
+                stopRequested = true;
+            } finally {
 
             isRunning = false;
             const wasAborted = stopRequested;
+            const wasSoftPaused = isSoftPaused; // capture before clearing, for the UI branch below
+            isSoftPaused = false; // always release; never let this wedge the heartbeat either
             stopRequested = false;
             broadcastState();
             if (btnRun) btnRun.classList.remove('stopping');
@@ -1581,7 +1604,7 @@
             if (!wasAborted) setProgress(0, true);
 
             if (isAutoActive) {
-                if (isSoftPaused) {
+                if (wasSoftPaused) {
                     updateMinimizedState('stopped'); // Fallback to base icon with empty ring
                     if (btnRun) btnRun.textContent = "⏳";
                 } else {
@@ -1601,11 +1624,12 @@
                 }
                 if (selectLimit) selectLimit.disabled = false;
 
-                if (wasAborted && !isSoftPaused) {
+                if (wasAborted && !wasSoftPaused) {
                     window.log && window.log(`🛑 Batch aborted.`, 'warn');
                 } else if (!wasAborted) {
                     window.log && window.log(`🎉 Batch Complete.`, 'success');
                 }
+            }
             }
         }
 
@@ -1819,7 +1843,7 @@
                                             if (numAmount >= 5 && numAmount <= 1000) {
                                                 if (typeof hideSBmenu === 'function') hideSBmenu(); // Close immediately so user can keep chatting
                                                 try {
-                                                    const resp = await fetch(`/json/bonusBuy.php?spendtype=gift&amount=${numAmount}&giftTo=${uid}`);
+                                                    const resp = await fetchWithTimeout(`/json/bonusBuy.php?spendtype=gift&amount=${numAmount}&giftTo=${uid}`);
                                                     const data = await resp.json();
                                                     if (data.success) {
                                                         sbLog(`🎁 ${numAmount} BP to ${username}`, 'success');
@@ -1855,7 +1879,7 @@
                                         if (window.confirm(`Send 1 Freeleech Wedge to ${username}?`)) {
                                             if (typeof hideSBmenu === 'function') hideSBmenu(); // Close immediately so user can keep chatting
                                             try {
-                                                const resp = await fetch(`/json/bonusBuy.php?spendtype=sendWedge&giftTo=${uid}`);
+                                                const resp = await fetchWithTimeout(`/json/bonusBuy.php?spendtype=sendWedge&giftTo=${uid}`);
                                                 const data = await resp.json();
                                                 if (data.success) {
                                                     sbLog(`🧀 Wedge to ${username}`, 'success');
